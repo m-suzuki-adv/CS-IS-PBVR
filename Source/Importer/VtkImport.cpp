@@ -1,8 +1,18 @@
-/*----------------------------------------------------------------------------
+/*
+ * Copyright (c) 2022 Japan Atomic Energy Agency
  *
- *  Copyright (c) Visualization Laboratory, Kyoto University.
- *  All rights reserved.
- *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "VtkImport.h"
 
@@ -127,38 +137,75 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
         return ::GetValueArrayImpl<kvs::Real32>( data->GetPointData(),
                                                  data->GetNumberOfPoints(), component_count );
 
-        auto first_array = point_data->GetArray( 0 );
-
-        switch ( first_array->GetDataType() )
+        int array_type = 0;
+        for ( vtkIdType i = 0; i < point_data->GetNumberOfArrays(); ++i )
         {
-        case VTK_FLOAT:
-            return ::GetValueArrayImpl<kvs::Real32>( data->GetPointData(),
-                                                     data->GetNumberOfPoints(), component_count );
-        case VTK_TYPE_INT8:
-            return ::GetValueArrayImpl<kvs::Int8>( data->GetPointData(), data->GetNumberOfPoints(),
-                                                   component_count );
-        case VTK_TYPE_INT16:
-            return ::GetValueArrayImpl<kvs::Int16>( data->GetPointData(), data->GetNumberOfPoints(),
-                                                    component_count );
-        case VTK_TYPE_INT32:
-            return ::GetValueArrayImpl<kvs::Int32>( data->GetPointData(), data->GetNumberOfPoints(),
-                                                    component_count );
-        case VTK_TYPE_INT64:
-            return ::GetValueArrayImpl<kvs::Int64>( data->GetPointData(), data->GetNumberOfPoints(),
-                                                    component_count );
-        case VTK_TYPE_UINT8:
+            auto array = point_data->GetArray( i );
+
+            switch ( array->GetArrayType() )
+            {
+            case VTK_TYPE_UINT8:
+                array_type = std::max( array_type, 0 );
+                break;
+            case VTK_TYPE_UINT16:
+                array_type = std::max( array_type, 1 );
+                break;
+            case VTK_TYPE_UINT32:
+                array_type = std::max( array_type, 2 );
+                break;
+            case VTK_TYPE_UINT64:
+                array_type = std::max( array_type, 3 );
+                break;
+            case VTK_TYPE_INT8:
+                array_type = std::max( array_type, 4 );
+                break;
+            case VTK_TYPE_INT16:
+                array_type = std::max( array_type, 5 );
+                break;
+            case VTK_TYPE_INT32:
+                array_type = std::max( array_type, 6 );
+                break;
+            case VTK_TYPE_INT64:
+                array_type = std::max( array_type, 7 );
+                break;
+            case VTK_FLOAT:
+                array_type = std::max( array_type, 8 );
+                break;
+            case VTK_DOUBLE:
+            default:
+                array_type = std::numeric_limits<int>::max();
+            }
+        }
+
+        switch ( array_type )
+        {
+        case 0:
             return ::GetValueArrayImpl<kvs::UInt8>( data->GetPointData(), data->GetNumberOfPoints(),
                                                     component_count );
-        case VTK_TYPE_UINT16:
+        case 1:
             return ::GetValueArrayImpl<kvs::UInt16>( data->GetPointData(),
                                                      data->GetNumberOfPoints(), component_count );
-        case VTK_TYPE_UINT32:
+        case 2:
             return ::GetValueArrayImpl<kvs::UInt32>( data->GetPointData(),
                                                      data->GetNumberOfPoints(), component_count );
-        case VTK_TYPE_UINT64:
+        case 3:
             return ::GetValueArrayImpl<kvs::UInt64>( data->GetPointData(),
                                                      data->GetNumberOfPoints(), component_count );
-        case VTK_DOUBLE:
+        case 4:
+            return ::GetValueArrayImpl<kvs::Int8>( data->GetPointData(), data->GetNumberOfPoints(),
+                                                   component_count );
+        case 5:
+            return ::GetValueArrayImpl<kvs::Int16>( data->GetPointData(), data->GetNumberOfPoints(),
+                                                    component_count );
+        case 6:
+            return ::GetValueArrayImpl<kvs::Int32>( data->GetPointData(), data->GetNumberOfPoints(),
+                                                    component_count );
+        case 7:
+            return ::GetValueArrayImpl<kvs::Int64>( data->GetPointData(), data->GetNumberOfPoints(),
+                                                    component_count );
+        case 8:
+            return ::GetValueArrayImpl<kvs::Real32>( data->GetPointData(),
+                                                     data->GetNumberOfPoints(), component_count );
         default:
             return ::GetValueArrayImpl<kvs::Real64>( data->GetPointData(),
                                                      data->GetNumberOfPoints(), component_count );
@@ -185,10 +232,12 @@ kvs::UnstructuredVolumeObject::CellType GetKvsCellType( int type )
         return kvs::UnstructuredVolumeObject::QuadraticHexahedra;
     case VTK_VERTEX:
         return kvs::UnstructuredVolumeObject::Point;
-    case VTK_PYRAMID:
-        return kvs::UnstructuredVolumeObject::Pyramid;
     case VTK_WEDGE:
+    case VTK_QUADRATIC_WEDGE:
         return kvs::UnstructuredVolumeObject::Prism;
+    case VTK_PYRAMID:
+    case VTK_QUADRATIC_PYRAMID:
+        return kvs::UnstructuredVolumeObject::Pyramid;
     default:
         return kvs::UnstructuredVolumeObject::UnknownCellType;
     }
@@ -250,12 +299,14 @@ void ReorderElementNodeIndices( DestinationIterator& kvs_connection, vtkIdList* 
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
         break;
     }
-    case VTK_PYRAMID: {
+    case VTK_PYRAMID:
+    case VTK_QUADRATIC_PYRAMID: {
         constexpr int order[] = { 4, 0, 1, 2, 3 };
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
         break;
     }
-    case VTK_WEDGE: {
+    case VTK_WEDGE:
+    case VTK_QUADRATIC_WEDGE: {
         constexpr int order[] = { 0, 1, 2, 3, 4, 5 };
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
         break;

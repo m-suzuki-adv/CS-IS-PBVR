@@ -1,3 +1,13 @@
+/*
+ * Created by Japan Atomic Energy Agency
+ *
+ * To the extent possible under law, the person who associated CC0 with
+ * this file has waived all copyright and related or neighboring rights
+ * to this file.
+ *
+ * You should have received a copy of the CC0 legal code along with this
+ * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
 #include <iostream>
 
 #include "kvs/StructuredVolumeObject"
@@ -95,6 +105,7 @@ void Plot3d2Kvsml( const std::string& directory, const std::string& base, const 
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }

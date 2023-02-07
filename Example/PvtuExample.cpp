@@ -1,3 +1,13 @@
+/*
+ * Created by Japan Atomic Energy Agency
+ *
+ * To the extent possible under law, the person who associated CC0 with
+ * this file has waived all copyright and related or neighboring rights
+ * to this file.
+ *
+ * You should have received a copy of the CC0 legal code along with this
+ * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
 #include <iostream>
 #include <string>
 
@@ -16,11 +26,11 @@ void Pvtu2Kvsml( const std::string& directory, const std::string& base, const st
 {
     std::cout << "reading " << src << " ..." << std::endl;
     cvt::VtkXmlPUnstructuredGrid input_pvtu( src );
-    std::cout << "#piece: " << input_pvtu.number_of_pieces() << std::endl;
+    std::cout << "#piece: " << input_pvtu.numberOfPieces() << std::endl;
 
     int last_time_step = 0;
     int time_step = 0;
-    int sub_volume_count = input_pvtu.number_of_pieces();
+    int sub_volume_count = input_pvtu.numberOfPieces();
     int sub_volume_id = 1;
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
@@ -64,6 +74,7 @@ void Pvtu2Kvsml( const std::string& directory, const std::string& base, const st
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }
@@ -159,6 +170,7 @@ void SeriesPvtu2Kvsml( const std::string& directory, const std::string& base,
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }
@@ -217,7 +229,6 @@ void SeriesPvtu2KvsmlWhole( const std::string& directory, const std::string& bas
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
-
         e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );

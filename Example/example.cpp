@@ -1,3 +1,13 @@
+/*
+ * Created by Japan Atomic Energy Agency
+ *
+ * To the extent possible under law, the person who associated CC0 with
+ * this file has waived all copyright and related or neighboring rights
+ * to this file.
+ *
+ * You should have received a copy of the CC0 legal code along with this
+ * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
 #include <algorithm>
 #include <cctype>
 #include <iostream>
@@ -18,7 +28,8 @@ void SeriesVti2Kvsml( const std::string& directory, const std::string& base,
                       const std::string& src );
 void Vts2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Pvts2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
-void Avs2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void AvsUcd2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void AvsFld2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Vtu2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void SeriesVtu2Kvsml( const std::string& directory, const std::string& base,
                       const std::string& src );
@@ -202,14 +213,32 @@ int main( int argc, char** argv )
         src /= "example_0.pvts";
         Pvts2Kvsml( output_directory, "example_0", src.string() );
     }
-    else if ( example_name == "avs2kvsml" )
+    else if ( example_name == "avsfld2kvsml" )
+    {
+        fs::path src = input_directory;
+        src /= "pbvr_sample_data";
+        src /= "fld";
+        src /= "gt5d.fld";
+        fs::path dst = output_directory;
+        mkdir( dst );
+        AvsFld2Kvsml( dst.string(), "gt5d", src.string() );
+    }
+    else if ( example_name == "avsfld2kvsml2" )
+    {
+        fs::path src = input_directory;
+        src /= "tdf.fld";
+        fs::path dst = output_directory;
+        mkdir( dst );
+        AvsFld2Kvsml( dst.string(), "tdf", src.string() );
+    }
+    else if ( example_name == "avsucd2kvsml" )
     {
         fs::path src = input_directory;
         src /= "frontstr.inp";
         fs::path dst = output_directory;
         dst /= "AVS";
         mkdir( dst );
-        Avs2Kvsml( dst.string(), "frontstr", src.string() );
+        AvsUcd2Kvsml( dst.string(), "frontstr", src.string() );
     }
     else if ( example_name == "vtu2kvsml" )
     {

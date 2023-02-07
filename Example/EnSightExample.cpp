@@ -1,3 +1,13 @@
+/*
+ * Created by Japan Atomic Energy Agency
+ *
+ * To the extent possible under law, the person who associated CC0 with
+ * this file has waived all copyright and related or neighboring rights
+ * to this file.
+ *
+ * You should have received a copy of the CC0 legal code along with this
+ * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
 #include <iostream>
 #include <string>
 
@@ -72,6 +82,12 @@ void Case2Kvsml( const std::string& directory, const std::string& base, const st
                     kvs::UnstructuredVolumeObject* object = &importer;
                     object->print( std::cout, kvs::Indent( 6 ) );
 
+                    if ( object->cellType() ==
+                         kvs::UnstructuredVolumeObject::CellType::UnknownCellType )
+                    {
+                        continue;
+                    }
+
                     auto local_base =
                         std::string( base ) + "_" + std::to_string( object->cellType() );
 
@@ -117,6 +133,7 @@ void Case2Kvsml( const std::string& directory, const std::string& base, const st
         e.second.write( directory, local_base );
         // or
         // e.second.write( "<directory>/<local_base>.pfi" );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }

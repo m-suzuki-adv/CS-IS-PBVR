@@ -1,3 +1,13 @@
+/*
+ * Created by Japan Atomic Energy Agency
+ *
+ * To the extent possible under law, the person who associated CC0 with
+ * this file has waived all copyright and related or neighboring rights
+ * to this file.
+ *
+ * You should have received a copy of the CC0 legal code along with this
+ * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
 #include <iostream>
 #include <string>
 
@@ -105,5 +115,6 @@ void Cgns2Kvsml( const std::string& directory, const std::string& base, const st
         e.second.write( directory, local_base );
         // or
         // e.second.write( "<directory>/<local_base>.pfi" );
+        e.second.print( std::cout );
     }
 }
