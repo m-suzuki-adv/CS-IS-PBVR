@@ -134,6 +134,9 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
 
     if ( component_count > 0 )
     {
+        return ::GetValueArrayImpl<kvs::Real32>( data->GetPointData(),
+                                                 data->GetNumberOfPoints(), component_count );
+
         int array_type = 0;
         for ( vtkIdType i = 0; i < point_data->GetNumberOfArrays(); ++i )
         {
